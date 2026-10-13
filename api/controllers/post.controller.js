@@ -36,6 +36,10 @@ const getPost = async (req, res) => {
       select: "username avatar",
     });
 
+    if (!post) {
+      return res.status(404).json({ message: "Post not found!" });
+    }
+
     const postDetail = await PostDetail.findOne({ postId: id });
 
     // to ckeck if the user is logged in and saved the above post
@@ -109,7 +113,12 @@ const deletePost = async (req, res) => {
   try {
     const post = await Post.findById(id);
 
-    if (post.userId !== tokenUserId) {
+    if (!post) {
+      return res.status(404).json({ message: "Post not found!" });
+    }
+
+    // userId is an ObjectId, so compare by string value rather than reference
+    if (post.userId.toString() !== tokenUserId) {
       return res
         .status(403)
         .json({ message: "Unauthorized to delete this message" });

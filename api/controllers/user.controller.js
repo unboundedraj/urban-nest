@@ -43,11 +43,16 @@ const updateUser = async (req, res) => {
       hashedPassword = await bcrypt.hash(password, 10);
     }
 
-    const updatedUser = await User.findByIdAndUpdate(id, {
-      ...inputs,
-      ...(hashedPassword && { password: hashedPassword }),
-      ...(avatar && { avatar }),
-    });
+    // Return the updated document (not the old one) and never send the hash
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      {
+        ...inputs,
+        ...(hashedPassword && { password: hashedPassword }),
+        ...(avatar && { avatar }),
+      },
+      { new: true }
+    ).select("-password");
 
     res.status(200).json(updatedUser);
   } catch (error) {
